@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.CDIS.backend.dto.RegisterRequest;
 import com.CDIS.backend.dto.UserResponse;
@@ -27,12 +28,19 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private JwtService jwtService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserServiceImpl userService;
 
     @Test
     void register_persistsUserAndReturnsIdAndEmail() {
         when(userRepository.existsByEmail("jane.doe@example.com")).thenReturn(false);
+        when(passwordEncoder.encode("super-secret")).thenReturn(new BCryptPasswordEncoder().encode("super-secret"));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             user.setId(1L);

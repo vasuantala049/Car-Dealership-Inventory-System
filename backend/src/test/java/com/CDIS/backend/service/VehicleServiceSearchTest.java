@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.CDIS.backend.dto.VehicleResponse;
 import com.CDIS.backend.entity.Vehicle;
+import com.CDIS.backend.repository.PurchaseRepository;
 import com.CDIS.backend.repository.VehicleRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,11 +26,15 @@ class VehicleServiceSearchTest {
     @Mock
     private VehicleRepository vehicleRepository;
 
+    // PurchaseRepository is required by the VehicleServiceImpl constructor
+    @Mock
+    private PurchaseRepository purchaseRepository;
+
     private VehicleService vehicleService;
 
     @BeforeEach
     void setUp() {
-        vehicleService = new VehicleServiceImpl(vehicleRepository);
+        vehicleService = new VehicleServiceImpl(vehicleRepository, purchaseRepository);
     }
 
     @Test

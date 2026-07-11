@@ -16,7 +16,12 @@ public interface VehicleService {
 
     List<VehicleResponse> searchVehicles(String make, String model, String category, BigDecimal minPrice, BigDecimal maxPrice);
 
-    VehicleResponse purchase(Long id);
+    /**
+     * Decrements vehicle stock by 1 and records the purchase against the given user.
+     * @param id Vehicle ID
+     * @param userEmail Email of the user making the purchase
+     */
+    VehicleResponse purchase(Long id, String userEmail);
 
     VehicleResponse restock(Long id, Integer amount);
 

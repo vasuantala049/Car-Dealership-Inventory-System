@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.CDIS.backend.dto.VehicleResponse;
 import com.CDIS.backend.entity.Vehicle;
 import com.CDIS.backend.exception.OutOfStockException;
+import com.CDIS.backend.repository.PurchaseRepository;
 import com.CDIS.backend.repository.VehicleRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,11 +27,15 @@ class VehicleServiceInventoryTest {
     @Mock
     private VehicleRepository vehicleRepository;
 
+    // PurchaseRepository is now required by VehicleServiceImpl to record purchase history
+    @Mock
+    private PurchaseRepository purchaseRepository;
+
     private VehicleService vehicleService;
 
     @BeforeEach
     void setUp() {
-        vehicleService = new VehicleServiceImpl(vehicleRepository);
+        vehicleService = new VehicleServiceImpl(vehicleRepository, purchaseRepository);
     }
 
     @Test
@@ -40,7 +45,8 @@ class VehicleServiceInventoryTest {
         when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle));
         when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(i -> i.getArgument(0));
 
-        VehicleResponse response = vehicleService.purchase(1L);
+        // Pass a buyer email — the service will record a Purchase record using this
+        VehicleResponse response = vehicleService.purchase(1L, "buyer@test.com");
 
         assertThat(response.quantity()).isEqualTo(2);
         verify(vehicleRepository).save(vehicle);
@@ -53,7 +59,7 @@ class VehicleServiceInventoryTest {
         
         when(vehicleRepository.findById(1L)).thenReturn(Optional.of(vehicle));
 
-        assertThrows(OutOfStockException.class, () -> vehicleService.purchase(1L));
+        assertThrows(OutOfStockException.class, () -> vehicleService.purchase(1L, "buyer@test.com"));
     }
 
     @Test

@@ -6,8 +6,14 @@ import './index.css';
 
 import AdminPage from './pages/AdminPage';
 import DashboardPage from './pages/DashboardPage';
+import MyGaragePage from './pages/MyGaragePage';
 import { Link } from 'react-router-dom';
 
+/**
+ * Extracts and decodes the user role securely from the JWT token stored in localStorage.
+ * Automatically handles Base64Url padding and URL-safe characters.
+ * @returns {string|null} The user's role (e.g., 'ADMIN', 'USER') or null if invalid/missing.
+ */
 function getUserRole() {
   const token = localStorage.getItem('token');
   if (!token) return null;
@@ -24,6 +30,12 @@ function getUserRole() {
   }
 }
 
+/**
+ * Layout wrapper for authenticated pages that displays a persistent top navigation bar.
+ * Conditionally renders links based on the user's role (e.g., hiding Admin controls from standard users).
+ * @param {Object} props - React props
+ * @param {React.ReactNode} props.children - Child components to render inside the layout
+ */
 function DashboardLayout({ children }) {
   function handleLogout() {
     localStorage.removeItem('token');
@@ -41,6 +53,8 @@ function DashboardLayout({ children }) {
           {role === 'ADMIN' && (
             <Link to="/admin" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Admin</Link>
           )}
+          {/* My Garage: visible to all logged-in users, left of the Log Out button */}
+          <Link to="/my-garage" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>🏎️ My Garage</Link>
           <button className="btn-ghost" onClick={handleLogout}>Log Out</button>
         </div>
       </header>
@@ -94,6 +108,17 @@ function App() {
                   <AdminPage />
                 </DashboardLayout>
               </AdminRoute>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/my-garage"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <MyGaragePage />
+              </DashboardLayout>
             </PrivateRoute>
           }
         />

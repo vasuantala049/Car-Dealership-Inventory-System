@@ -1,5 +1,7 @@
 package com.CDIS.backend.controller;
 
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,7 +47,8 @@ class VehicleControllerInventoryTest {
                 1L, "Toyota", "Camry", "Sedan", new BigDecimal("25000"), 4, 1L
         );
 
-        when(vehicleService.purchase(1L)).thenReturn(response);
+        // Use anyLong() + anyString() because @AuthenticationPrincipal provides the email at runtime
+        when(vehicleService.purchase(anyLong(), anyString())).thenReturn(response);
 
         mockMvc.perform(post("/api/vehicles/1/purchase"))
                 .andExpect(status().isOk())
@@ -55,7 +58,7 @@ class VehicleControllerInventoryTest {
     @Test
     @WithMockUser
     void purchase_whenOutOfStock_returnsBadRequest() throws Exception {
-        doThrow(new OutOfStockException("Vehicle is out of stock")).when(vehicleService).purchase(1L);
+        doThrow(new OutOfStockException("Vehicle is out of stock")).when(vehicleService).purchase(anyLong(), anyString());
 
         mockMvc.perform(post("/api/vehicles/1/purchase"))
                 .andExpect(status().isBadRequest());

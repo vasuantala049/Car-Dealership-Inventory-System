@@ -13,6 +13,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.CDIS.backend.security.JwtAuthenticationFilter;
 
+/**
+ * Security configuration class that sets up HTTP security, authentication mechanisms,
+ * and role-based access control (RBAC) across the API endpoints.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -26,10 +30,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                // Disable CSRF since we are using stateless JWT authentication
                 .csrf(csrf -> csrf.disable())
+                // Ensure the session is stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                    // Any authenticated user can purchase a vehicle and view their purchase history
+                    .requestMatchers(HttpMethod.POST, "/api/vehicles/{id}/purchase").hasAnyRole("USER", "ADMIN")
+                    .requestMatchers("/api/purchases/**").hasAnyRole("USER", "ADMIN")
+                    // Only admins can create, update, delete vehicles or restock inventory
+                    .requestMatchers(HttpMethod.POST, "/api/vehicles").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/api/vehicles/{id}/restock").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/api/vehicles/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.DELETE, "/api/vehicles/**").hasRole("ADMIN")
                     .requestMatchers("/api/vehicles/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated())

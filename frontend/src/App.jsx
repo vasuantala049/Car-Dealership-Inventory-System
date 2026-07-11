@@ -4,7 +4,9 @@ import RegisterPage from './pages/RegisterPage';
 import PrivateRoute from './components/PrivateRoute';
 import './index.css';
 
-function Dashboard() {
+import DashboardPage from './pages/DashboardPage';
+
+function DashboardLayout() {
   function handleLogout() {
     localStorage.removeItem('token');
     window.location.href = '/login';
@@ -16,9 +18,7 @@ function Dashboard() {
         <h1>🚗 Car Dealership</h1>
         <button className="btn-ghost" onClick={handleLogout}>Log Out</button>
       </header>
-      <main style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center', paddingTop: '4rem', opacity: 0.6 }}>
-        <p style={{ fontSize: '1.2rem' }}>Dashboard coming in Feature 7 🚀</p>
-      </main>
+      <DashboardPage />
     </div>
   );
 }
@@ -46,7 +46,7 @@ function App() {
           path="/dashboard"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <DashboardLayout />
             </PrivateRoute>
           }
         />

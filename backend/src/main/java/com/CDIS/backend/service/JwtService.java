@@ -3,6 +3,7 @@ package com.CDIS.backend.service;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.CDIS.backend.entity.User;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -36,5 +38,31 @@ public class JwtService {
                 .expiration(Date.from(now.plusMillis(expirationMillis)))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+            extractAllClaims(token);
+            return true;
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

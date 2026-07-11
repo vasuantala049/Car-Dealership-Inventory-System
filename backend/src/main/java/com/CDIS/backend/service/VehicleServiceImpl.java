@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import com.CDIS.backend.dto.VehicleRequest;
 import com.CDIS.backend.dto.VehicleResponse;
 import com.CDIS.backend.entity.Vehicle;
+import com.CDIS.backend.exception.OutOfStockException;
 import com.CDIS.backend.exception.VehicleNotFoundException;
 import com.CDIS.backend.repository.VehicleRepository;
 import com.CDIS.backend.repository.VehicleSpecifications;
@@ -65,6 +66,30 @@ public class VehicleServiceImpl implements VehicleService {
     public List<VehicleResponse> searchVehicles(String make, String model, String category, BigDecimal minPrice, BigDecimal maxPrice) {
         Specification<Vehicle> spec = VehicleSpecifications.searchVehicles(make, model, category, minPrice, maxPrice);
         return vehicleRepository.findAll(spec).stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    public VehicleResponse purchase(Long id) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException(id));
+        
+        if (vehicle.getQuantity() <= 0) {
+            throw new OutOfStockException("Vehicle with id " + id + " is out of stock.");
+        }
+        
+        vehicle.setQuantity(vehicle.getQuantity() - 1);
+        Vehicle updated = vehicleRepository.save(vehicle);
+        return toResponse(updated);
+    }
+
+    @Override
+    public VehicleResponse restock(Long id, Integer amount) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException(id));
+        
+        vehicle.setQuantity(vehicle.getQuantity() + amount);
+        Vehicle updated = vehicleRepository.save(vehicle);
+        return toResponse(updated);
     }
 
     @Override

@@ -16,8 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
+import com.CDIS.backend.dto.QuantityRequest;
 import com.CDIS.backend.dto.VehicleRequest;
 import com.CDIS.backend.dto.VehicleResponse;
+import com.CDIS.backend.exception.OutOfStockException;
 import com.CDIS.backend.exception.VehicleNotFoundException;
 import com.CDIS.backend.service.VehicleService;
 
@@ -57,6 +61,16 @@ public class VehicleController {
         return ResponseEntity.ok(vehicleService.update(id, request));
     }
 
+    @PostMapping("/{id}/purchase")
+    public ResponseEntity<VehicleResponse> purchase(@PathVariable Long id) {
+        return ResponseEntity.ok(vehicleService.purchase(id));
+    }
+
+    @PostMapping("/{id}/restock")
+    public ResponseEntity<VehicleResponse> restock(@PathVariable Long id, @Valid @RequestBody QuantityRequest request) {
+        return ResponseEntity.ok(vehicleService.restock(id, request.amount()));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         vehicleService.delete(id);
@@ -66,5 +80,10 @@ public class VehicleController {
     @ExceptionHandler(VehicleNotFoundException.class)
     public ResponseEntity<Void> handleVehicleNotFound(VehicleNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    @ExceptionHandler(OutOfStockException.class)
+    public ResponseEntity<Void> handleOutOfStock(OutOfStockException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 }

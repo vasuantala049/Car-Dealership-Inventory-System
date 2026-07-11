@@ -5,11 +5,15 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 import com.CDIS.backend.dto.VehicleRequest;
 import com.CDIS.backend.dto.VehicleResponse;
 import com.CDIS.backend.entity.Vehicle;
 import com.CDIS.backend.exception.VehicleNotFoundException;
 import com.CDIS.backend.repository.VehicleRepository;
+import com.CDIS.backend.repository.VehicleSpecifications;
+import org.springframework.data.jpa.domain.Specification;
 
 @Service
 @Transactional
@@ -54,6 +58,13 @@ public class VehicleServiceImpl implements VehicleService {
 
         Vehicle updated = vehicleRepository.save(existing);
         return toResponse(updated);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<VehicleResponse> searchVehicles(String make, String model, String category, BigDecimal minPrice, BigDecimal maxPrice) {
+        Specification<Vehicle> spec = VehicleSpecifications.searchVehicles(make, model, category, minPrice, maxPrice);
+        return vehicleRepository.findAll(spec).stream().map(this::toResponse).toList();
     }
 
     @Override

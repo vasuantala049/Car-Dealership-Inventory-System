@@ -19,14 +19,19 @@ import com.CDIS.backend.config.SecurityConfig;
 import com.CDIS.backend.dto.RegisterRequest;
 import com.CDIS.backend.dto.UserResponse;
 import com.CDIS.backend.exception.EmailAlreadyExistsException;
+import com.CDIS.backend.security.JwtAuthenticationFilter;
+import com.CDIS.backend.service.JwtService;
 import com.CDIS.backend.service.UserService;
 
 @WebMvcTest(AuthController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, JwtAuthenticationFilter.class})
 class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private JwtService jwtService;
 
     @MockitoBean
     private UserService userService;

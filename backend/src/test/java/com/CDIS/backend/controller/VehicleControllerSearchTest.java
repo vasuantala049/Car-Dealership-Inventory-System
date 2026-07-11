@@ -21,14 +21,19 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.CDIS.backend.config.SecurityConfig;
 import com.CDIS.backend.dto.VehicleResponse;
+import com.CDIS.backend.security.JwtAuthenticationFilter;
+import com.CDIS.backend.service.JwtService;
 import com.CDIS.backend.service.VehicleService;
 
 @WebMvcTest(VehicleController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, JwtAuthenticationFilter.class})
 class VehicleControllerSearchTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private JwtService jwtService;
 
     @MockitoBean
     private VehicleService vehicleService;

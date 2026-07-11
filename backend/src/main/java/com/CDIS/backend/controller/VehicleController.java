@@ -1,5 +1,6 @@
 package com.CDIS.backend.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CDIS.backend.dto.VehicleRequest;
@@ -37,6 +39,17 @@ public class VehicleController {
     @GetMapping
     public ResponseEntity<List<VehicleResponse>> getAll() {
         return ResponseEntity.ok(vehicleService.getAll());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<VehicleResponse>> search(
+            @RequestParam(required = false) String make,
+            @RequestParam(required = false) String model,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice
+    ) {
+        return ResponseEntity.ok(vehicleService.searchVehicles(make, model, category, minPrice, maxPrice));
     }
 
     @PutMapping("/{id}")

@@ -34,7 +34,7 @@ describe('LoginPage', () => {
   it('has a link to the register page', () => {
     renderWithRouter(<LoginPage />);
 
-    expect(screen.getByRole('link', { name: /register/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /create one now/i })).toBeInTheDocument();
   });
 
   it('stores JWT in localStorage and redirects to dashboard on successful login', async () => {
@@ -76,6 +76,6 @@ describe('LoginPage', () => {
     await userEvent.type(screen.getByLabelText(/password/i), 'password123');
     await userEvent.click(screen.getByRole('button', { name: /log in/i }));
 
-    expect(screen.getByRole('button', { name: /log in/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /signing in/i })).toBeDisabled();
   });
 });

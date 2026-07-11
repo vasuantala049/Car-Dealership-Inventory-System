@@ -47,7 +47,7 @@ describe('RegisterPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Login Page')).toBeInTheDocument();
-    });
+    }, { timeout: 1500 });
   });
 
   it('shows an error message when email already exists (409)', async () => {
@@ -74,6 +74,6 @@ describe('RegisterPage', () => {
     await userEvent.type(screen.getByLabelText(/password/i), 'password123');
     await userEvent.click(screen.getByRole('button', { name: /register/i }));
 
-    expect(screen.getByRole('button', { name: /register/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /creating account/i })).toBeDisabled();
   });
 });

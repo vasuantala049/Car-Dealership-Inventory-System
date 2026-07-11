@@ -8,6 +8,7 @@ import com.CDIS.backend.dto.LoginResponse;
 import com.CDIS.backend.dto.RegisterRequest;
 import com.CDIS.backend.dto.UserResponse;
 import com.CDIS.backend.entity.User;
+import com.CDIS.backend.entity.UserRole;
 import com.CDIS.backend.exception.EmailAlreadyExistsException;
 import com.CDIS.backend.exception.InvalidCredentialsException;
 import com.CDIS.backend.repository.UserRepository;
@@ -34,7 +35,7 @@ public class UserServiceImpl implements UserService {
             throw new EmailAlreadyExistsException("Email already exists");
         }
 
-        User user = new User(null, request.email(), passwordEncoder.encode(request.password()));
+        User user = new User(null, request.email(), passwordEncoder.encode(request.password()), UserRole.USER);
         User savedUser = userRepository.save(user);
         return new UserResponse(savedUser.getId(), savedUser.getEmail());
     }

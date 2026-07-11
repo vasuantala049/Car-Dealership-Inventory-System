@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.CDIS.backend.entity.User;
+import com.CDIS.backend.entity.UserRole;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -31,9 +32,11 @@ public class JwtService {
 
     public String generateToken(User user) {
         Instant now = Instant.now();
+        UserRole role = user.getRole() == null ? UserRole.USER : user.getRole();
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("userId", user.getId())
+            .claim("role", role.name())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expirationMillis)))
                 .signWith(secretKey)
@@ -51,6 +54,13 @@ public class JwtService {
         } catch (Exception exception) {
             return false;
         }
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> {
+            Object roleClaim = claims.get("role");
+            return roleClaim == null ? UserRole.USER.name() : roleClaim.toString();
+        });
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

@@ -2,6 +2,8 @@ package com.CDIS.backend.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,13 +23,22 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
+
     protected User() {
     }
 
     public User(Long id, String email, String password) {
+        this(id, email, password, UserRole.USER);
+    }
+
+    public User(Long id, String email, String password, UserRole role) {
         this.id = id;
         this.email = email;
         this.password = password;
+        this.role = role;
     }
 
     public Long getId() {
@@ -52,5 +63,13 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 }

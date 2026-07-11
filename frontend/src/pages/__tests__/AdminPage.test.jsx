@@ -115,6 +115,7 @@ describe('AdminPage', () => {
     // Fill out the required fields
     await userEvent.type(screen.getByLabelText(/make/i), 'Tesla');
     await userEvent.type(screen.getByLabelText(/model/i), 'Model 3');
+    await userEvent.selectOptions(screen.getByLabelText(/category/i), 'SEDAN');
     await userEvent.type(screen.getByLabelText(/price/i), '40000');
     await userEvent.type(screen.getByLabelText(/quantity/i), '5');
     

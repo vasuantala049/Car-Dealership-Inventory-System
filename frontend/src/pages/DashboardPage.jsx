@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getVehicles, searchVehicles } from '../services/vehicleService';
+import { getVehicles, searchVehicles, purchaseVehicle } from '../services/vehicleService';
 
 function Spinner() {
   return <span className="spinner" role="status" aria-hidden="false" />;
@@ -51,6 +51,21 @@ export default function DashboardPage() {
     fetchAllVehicles();
   };
 
+  // Feature 8: Handle purchasing a vehicle
+  const handlePurchase = async (id) => {
+    setError(''); // clear previous errors
+    try {
+      const updatedVehicle = await purchaseVehicle(id);
+      
+      // Update local state by replacing the purchased vehicle with the new data
+      setVehicles((prev) =>
+        prev.map((v) => (v.id === id ? updatedVehicle : v))
+      );
+    } catch (err) {
+      setError('Failed to purchase vehicle.');
+    }
+  };
+
   return (
     <main style={{ maxWidth: '1100px', margin: '0 auto', paddingTop: '1rem' }}>
       
@@ -65,7 +80,7 @@ export default function DashboardPage() {
               placeholder="e.g. Toyota" 
               value={make} 
               onChange={(e) => setMake(e.target.value)} 
-              style={{ paddingLeft: '1rem' }} // No icon for this input
+              style={{ paddingLeft: '1rem' }} 
             />
           </div>
           
@@ -123,9 +138,9 @@ export default function DashboardPage() {
             <p style={{ color: 'var(--text-muted)' }}>No vehicles found matching your criteria.</p>
           ) : (
             vehicles.map((v) => (
-              <div key={v.id} className="glass" style={{ padding: '1.5rem' }}>
+              <div key={v.id} className="glass" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
                 <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{v.make} {v.model}</h2>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '1rem' }}>
                   <span style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                     ${v.price.toLocaleString()}
                   </span>
@@ -133,6 +148,16 @@ export default function DashboardPage() {
                     {v.quantity} in stock
                   </span>
                 </div>
+                
+                {/* Feature 8: Purchase Button */}
+                <button 
+                  onClick={() => handlePurchase(v.id)} 
+                  className="btn-primary" 
+                  disabled={v.quantity <= 0}
+                  style={{ marginTop: '1rem' }}
+                >
+                  {v.quantity > 0 ? 'Buy' : 'Out of Stock'}
+                </button>
               </div>
             ))
           )}

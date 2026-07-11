@@ -5,15 +5,24 @@ function Spinner() {
   return <span className="spinner" role="status" aria-hidden="false" />;
 }
 
+/**
+ * The main Dashboard Page for regular users to view and interact with the vehicle inventory.
+ * Features search, filtering, and simulated purchase functionality.
+ */
 export default function DashboardPage() {
+  // --- Component State ---
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Search state
+  // Search state for filtering the inventory list
   const [make, setMake] = useState('');
   const [category, setCategory] = useState('');
 
+  /**
+   * Fetches all vehicles from the backend and updates the state.
+   * Runs initially when the component mounts.
+   */
   const fetchAllVehicles = async () => {
     setLoading(true);
     setError('');
@@ -27,10 +36,16 @@ export default function DashboardPage() {
     }
   };
 
+  // Load vehicles when the dashboard first renders
   useEffect(() => {
     fetchAllVehicles();
   }, []);
 
+  /**
+   * Handles the submission of the search/filter form.
+   * Queries the backend using the current search state (make, category).
+   * @param {Event} e - The form submission event
+   */
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -45,6 +60,9 @@ export default function DashboardPage() {
     }
   };
 
+  /**
+   * Clears all active filters and re-fetches the entire inventory list.
+   */
   const handleClear = () => {
     setMake('');
     setCategory('');

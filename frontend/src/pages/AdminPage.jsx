@@ -1,23 +1,34 @@
 import { useState, useEffect } from 'react';
-import { getVehicles, addVehicle, deleteVehicle } from '../services/vehicleService';
+import { getVehicles, addVehicle, deleteVehicle, restockVehicle } from '../services/vehicleService';
 
+/**
+ * The Admin Panel page, restricted to users with the 'ADMIN' role.
+ * Allows administrators to view the full inventory, add new vehicles, and delete existing vehicles.
+ */
 export default function AdminPage() {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Form State
+  // --- Form State for adding a new vehicle ---
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
   const [category, setCategory] = useState('');
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
 
-  // 1. Fetch initial vehicles
+  // --- Restock State: tracks the quantity input for each vehicle by ID ---
+  const [restockAmounts, setRestockAmounts] = useState({});
+
+  // 1. Fetch initial vehicles when the component mounts
   useEffect(() => {
     fetchVehicles();
   }, []);
 
+  /**
+   * Fetches the complete list of vehicles from the backend API.
+   * Handles loading states and errors.
+   */
   const fetchVehicles = async () => {
     setLoading(true);
     try {
@@ -30,7 +41,11 @@ export default function AdminPage() {
     }
   };
 
-  // 2. Handle adding a new vehicle
+  /**
+   * Handles the form submission to add a new vehicle to the inventory.
+   * Constructs the payload and sends a POST request to the API.
+   * @param {Event} e - Form submission event
+   */
   const handleAddVehicle = async (e) => {
     e.preventDefault();
     setError('');
@@ -67,6 +82,25 @@ export default function AdminPage() {
       setVehicles(vehicles.filter((v) => v.id !== id));
     } catch (err) {
       setError('Failed to delete vehicle');
+    }
+  };
+
+  /**
+   * Handles restocking a specific vehicle.
+   * Reads the restock amount from the per-vehicle input state and calls the API.
+   * @param {number} id - The vehicle ID to restock
+   */
+  const handleRestock = async (id) => {
+    const amount = parseInt(restockAmounts[id] || '0', 10);
+    if (!amount || amount <= 0) return;
+    try {
+      const updated = await restockVehicle(id, amount);
+      // Update only the restocked vehicle's quantity in local state
+      setVehicles(vehicles.map((v) => (v.id === id ? updated : v)));
+      // Clear the restock input for this vehicle
+      setRestockAmounts((prev) => ({ ...prev, [id]: '' }));
+    } catch (err) {
+      setError('Failed to restock vehicle');
     }
   };
 
@@ -126,22 +160,43 @@ export default function AdminPage() {
       ) : (
         <div style={{ display: 'grid', gap: '1rem' }}>
           {vehicles.map((v) => (
-            <div key={v.id} className="glass" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div key={v.id} className="glass" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '0.2rem' }}>{v.make} {v.model}</h3>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                   <span style={{ marginRight: '1rem' }}>{v.category}</span>
                   <span style={{ marginRight: '1rem' }}>${v.price.toLocaleString()}</span>
-                  <span>{v.quantity} in stock</span>
+                  <span style={{ fontWeight: 600, color: v.quantity === 0 ? 'var(--error)' : 'var(--success)' }}>
+                    {v.quantity} in stock
+                  </span>
                 </div>
               </div>
-              <button 
-                onClick={() => handleDelete(v.id)} 
-                className="btn-ghost" 
-                style={{ color: 'var(--danger)', borderColor: 'var(--danger-border)' }}
-              >
-                Delete
-              </button>
+              {/* Restock controls: inline quantity input + Restock button */}
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="Qty"
+                  value={restockAmounts[v.id] || ''}
+                  onChange={(e) => setRestockAmounts((prev) => ({ ...prev, [v.id]: e.target.value }))}
+                  style={{ width: '70px', padding: '0.4rem 0.6rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                  aria-label={`Restock quantity for ${v.make} ${v.model}`}
+                />
+                <button
+                  onClick={() => handleRestock(v.id)}
+                  className="btn-ghost"
+                  style={{ color: 'var(--success)', borderColor: 'var(--success)' }}
+                >
+                  + Restock
+                </button>
+                <button
+                  onClick={() => handleDelete(v.id)}
+                  className="btn-ghost"
+                  style={{ color: 'var(--danger)', borderColor: 'var(--danger-border)' }}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

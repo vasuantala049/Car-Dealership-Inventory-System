@@ -7,19 +7,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.CDIS.backend.config.SecurityConfig;
+import com.CDIS.backend.dto.RegisterRequest;
+import com.CDIS.backend.dto.UserResponse;
+import com.CDIS.backend.exception.EmailAlreadyExistsException;
 import com.CDIS.backend.service.UserService;
 
 @WebMvcTest(AuthController.class)
+@Import(SecurityConfig.class)
 class AuthControllerTest {
 
     @Autowired
@@ -31,10 +34,7 @@ class AuthControllerTest {
     @Test
     void register_withValidRequest_returnsCreatedWithoutPassword() throws Exception {
         when(userService.register(any(RegisterRequest.class)))
-                .thenReturn(ResponseEntity.status(201).body(Map.of(
-                        "id", 1L,
-                        "email", "jane.doe@example.com"
-                )));
+                .thenReturn(new UserResponse(1L, "jane.doe@example.com"));
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -54,10 +54,7 @@ class AuthControllerTest {
     @Test
     void register_whenEmailAlreadyExists_returnsConflict() throws Exception {
         when(userService.register(any(RegisterRequest.class)))
-                .thenThrow(new org.springframework.web.server.ResponseStatusException(
-                        org.springframework.http.HttpStatus.CONFLICT,
-                        "Email already exists"
-                ));
+                .thenThrow(new EmailAlreadyExistsException("Email already exists"));
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

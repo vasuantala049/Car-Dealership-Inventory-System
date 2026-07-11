@@ -6,12 +6,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import com.CDIS.backend.dto.VehicleRequest;
 import com.CDIS.backend.dto.VehicleResponse;
+import com.CDIS.backend.entity.Purchase;
 import com.CDIS.backend.entity.Vehicle;
 import com.CDIS.backend.exception.OutOfStockException;
 import com.CDIS.backend.exception.VehicleNotFoundException;
+import com.CDIS.backend.repository.PurchaseRepository;
 import com.CDIS.backend.repository.VehicleRepository;
 import com.CDIS.backend.repository.VehicleSpecifications;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,9 +24,11 @@ import org.springframework.data.jpa.domain.Specification;
 public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final PurchaseRepository purchaseRepository;
 
-    public VehicleServiceImpl(VehicleRepository vehicleRepository) {
+    public VehicleServiceImpl(VehicleRepository vehicleRepository, PurchaseRepository purchaseRepository) {
         this.vehicleRepository = vehicleRepository;
+        this.purchaseRepository = purchaseRepository;
     }
 
     @Override
@@ -69,7 +74,7 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public VehicleResponse purchase(Long id) {
+    public VehicleResponse purchase(Long id, String userEmail) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new VehicleNotFoundException(id));
         
@@ -77,8 +82,22 @@ public class VehicleServiceImpl implements VehicleService {
             throw new OutOfStockException("Vehicle with id " + id + " is out of stock.");
         }
         
+        // Decrement the vehicle stock
         vehicle.setQuantity(vehicle.getQuantity() - 1);
         Vehicle updated = vehicleRepository.save(vehicle);
+
+        // Record a snapshot of the purchase so the user can see it in their garage
+        Purchase purchase = new Purchase(
+                userEmail,
+                vehicle.getId(),
+                vehicle.getMake(),
+                vehicle.getModel(),
+                vehicle.getCategory(),
+                vehicle.getPrice(),
+                Instant.now()
+        );
+        purchaseRepository.save(purchase);
+
         return toResponse(updated);
     }
 

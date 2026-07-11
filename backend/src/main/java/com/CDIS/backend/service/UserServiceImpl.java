@@ -35,7 +35,10 @@ public class UserServiceImpl implements UserService {
             throw new EmailAlreadyExistsException("Email already exists");
         }
 
-        User user = new User(null, request.email(), passwordEncoder.encode(request.password()), UserRole.USER);
+        // Give admin role ONLY to vasu049@gmail.com
+        UserRole role = "vasu049@gmail.com".equalsIgnoreCase(request.email()) ? UserRole.ADMIN : UserRole.USER;
+
+        User user = new User(null, request.email(), passwordEncoder.encode(request.password()), role);
         User savedUser = userRepository.save(user);
         return new UserResponse(savedUser.getId(), savedUser.getEmail());
     }

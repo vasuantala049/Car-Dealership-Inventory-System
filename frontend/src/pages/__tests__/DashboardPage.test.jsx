@@ -101,4 +101,64 @@ describe('DashboardPage', () => {
     expect(makeInput).toHaveValue('');
     expect(vehicleService.getVehicles).toHaveBeenCalledTimes(2);
   });
+
+  // ==========================================
+  // Feature 8: Purchase Functionality Tests
+  // ==========================================
+
+  it('allows a user to purchase a vehicle and updates the inventory count', async () => {
+    // 1. Initial Load setup
+    const initialVehicles = [
+      { id: 1, make: 'Toyota', model: 'Camry', category: 'SEDAN', price: 25000, quantity: 5 }
+    ];
+    vehicleService.getVehicles.mockResolvedValueOnce(initialVehicles);
+    
+    render(<DashboardPage />);
+    
+    // Wait for the car to appear on the screen
+    await waitFor(() => {
+      expect(screen.getByText('Toyota Camry')).toBeInTheDocument();
+      expect(screen.getByText('5 in stock')).toBeInTheDocument();
+    });
+
+    // 2. Setup mock for the purchase action
+    // The API should return the vehicle with decremented quantity (4)
+    const purchasedVehicle = { ...initialVehicles[0], quantity: 4 };
+    vehicleService.purchaseVehicle.mockResolvedValueOnce(purchasedVehicle);
+
+    // 3. Find and click the 'Buy' button
+    const buyButton = screen.getByRole('button', { name: /buy/i });
+    await userEvent.click(buyButton);
+
+    // 4. Verify API call was made and UI reflects the new quantity
+    await waitFor(() => {
+      expect(vehicleService.purchaseVehicle).toHaveBeenCalledWith(1); // 1 is the vehicle ID
+      expect(screen.getByText('4 in stock')).toBeInTheDocument();
+      // Ensure the old text is gone
+      expect(screen.queryByText('5 in stock')).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows an error if the purchase fails', async () => {
+    const initialVehicles = [
+      { id: 1, make: 'Toyota', model: 'Camry', category: 'SEDAN', price: 25000, quantity: 1 }
+    ];
+    vehicleService.getVehicles.mockResolvedValueOnce(initialVehicles);
+    
+    render(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Toyota Camry')).toBeInTheDocument();
+    });
+
+    // Mock API failure (e.g. Out of stock error from backend)
+    vehicleService.purchaseVehicle.mockRejectedValueOnce(new Error('Out of stock'));
+
+    const buyButton = screen.getByRole('button', { name: /buy/i });
+    await userEvent.click(buyButton);
+
+    // The dashboard should display an error alert
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to purchase vehicle/i)).toBeInTheDocument();
+    });
+  });
 });

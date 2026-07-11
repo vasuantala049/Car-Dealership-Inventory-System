@@ -233,6 +233,12 @@ body {
   color: var(--text-muted);
 }
 
+/* Fix dropdown option background */
+select option {
+  background-color: #1a1a1a;
+  color: var(--text-primary);
+}
+
 /* ── Input with Icon ─────────────────────────────────────── */
 .input-wrapper {
   position: relative;

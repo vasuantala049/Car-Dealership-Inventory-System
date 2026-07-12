@@ -1,5 +1,9 @@
 Live link : http://13.235.75.58
 
+Default Admin Credentials
+-Email: vasu049@gmail.com
+-Password: 11111111
+
 # Car Dealership Inventory System
 
 A modern, responsive full-stack web application designed for car dealerships to manage their vehicle inventory seamlessly. Built using a robust Spring Boot backend and a sleek, glassmorphism-styled React frontend.
